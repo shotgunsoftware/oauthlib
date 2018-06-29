@@ -61,7 +61,8 @@ class Client(object):
                  signature_type=SIGNATURE_TYPE_AUTH_HEADER,
                  rsa_key=None, verifier=None, realm=None,
                  encoding='utf-8', decoding=None,
-                 nonce=None, timestamp=None):
+                 nonce=None, timestamp=None,
+                 allowed_empty_params=[]):
         """Create an OAuth 1 client.
 
         :param client_key: Client key (consumer key), mandatory.
@@ -101,6 +102,7 @@ class Client(object):
         self.decoding = encode(decoding)
         self.nonce = encode(nonce)
         self.timestamp = encode(timestamp)
+        self.allowed_empty_params = map(encode, allowed_empty_params)
 
     def __repr__(self):
         attrs = vars(self).copy()
@@ -167,11 +169,11 @@ class Client(object):
             ('oauth_signature_method', self.signature_method),
             ('oauth_consumer_key', self.client_key),
         ]
-        if self.resource_owner_key:
+        if self.resource_owner_key or 'resource_owner_key' in self.allowed_empty_params:
             params.append(('oauth_token', self.resource_owner_key))
-        if self.callback_uri:
+        if self.callback_uri or 'callback_uri' in self.allowed_empty_params:
             params.append(('oauth_callback', self.callback_uri))
-        if self.verifier:
+        if self.verifier or 'verifier' in self.allowed_empty_params:
             params.append(('oauth_verifier', self.verifier))
 
         # providing body hash for requests other than x-www-form-urlencoded
